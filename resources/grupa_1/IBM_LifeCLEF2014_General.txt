@@ -1,0 +1,36 @@
+http://ceur-ws.org/Vol-1180/CLEF2014wn-Life-ChenEt2014.pdf
+# Pentru fiecare numar de dupa unele cuvinte ar trebui sa avem un
+# fel de referinta (macar wikipedia / in pdf) ca sa stim despre ce e vorba
+
+General:
+	-metode bazate pe componente vizuale + machine learning (1)
+	-separarea automata a zonelor de interes (frunze, flori)
+		-extragerea de informatii low-level
+	-informatiile au fost encodate folosind reprezentarea 
+	Fisher Vector (2)
+	-au fost folosite tehnici recente de deep learning (3)
+	-sistemul combina mai multe surse de informatii, cum ar fi:
+		-identificarea organelor si integrarea informatiilor in imagine
+		-combinarea clasificarilor
+	-3/4 teste au fost mai bune decat cele ale celorlalti competitori 
+		- locul 1 in lifeClef 2014
+	-fine-grained object recognition (4), plant recognition, deep learning, 
+	feature coding (5), convolutional nerual network (6)
+
+Tehnici folosite:
+	-Run 1: Deep CNN cu 5 straturi de convolutional network (6'), 
+		3 straturi fully connection (8) si 
+		1 cost layer of logistic regression (9).
+	-Run 2: Advanced feature encoding - Fisher Kernel encoding (2')
+		-prima data sunt extrase caracteristici dense (SIFT (10) 
+		si Color Moment(11))
+		-fiecare caracteristica este modelata folosind Mixture of 
+		Gaussian(GMM's)(12), ceea ce formeaza reprezentarea Fisher Vector
+		-pentru fiecare caracterisistica aflam un SVM liniar (13)
+	-Run 3: O imbinare intre Run 1 si Run 2 folosind Empirical Fusing (14) 
+			-fiecare componenta primeste un scor si sunt introduse 
+			in modulul de fuziune
+	-Run 4: Segmentare si Fusion intre Run 2 si Run 3
+		-feature encoding pe imaginile cu zonele de interes extrase, 
+		dupa care fuziune cu Run 3 si unele imbunatatiri cum ar fi 
+		SVM averaging.

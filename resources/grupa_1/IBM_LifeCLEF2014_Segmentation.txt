@@ -1,0 +1,66 @@
+Segmentation
+	-in majoritatea cazurilor, folosind o regiune de interes (ROI) 
+	care incadreaza subiectul este indeajuns pentru a il clasifica
+	
+	-segmentarea si obtinerea ROI duce in majoritatea cazurilor 
+	la stergerea background-ului 
+	
+	-pentru fiecare categorie (flower, fruit, leaf, leafScan, stem) 
+	se aplica cate un algoritm diferit pentru stergerea fundalului
+	
+	-pentru wholeTree si branch nu se foloseste nimic in acest pas 
+	deoarece intreaga imagine contine destule informatii
+		-aceste imagini sunt folosite in alte module, cum ar 
+		fi feature extraction si learning
+	
+	-pentru floare si fruct este folosita o metoda de segmentare 
+	similara pentru a extrage ROI:
+	        -se merge pe presupunerea ca o floare sau un fruct 
+		este "mai rosu" fata de frunze, dupa care sunt 
+		localizate regiunile unde canalul rosu este mai mare 
+		decat cel verde.
+		
+		-fiecare imagine este convertita intr-o imagine gri 
+		iar zonele rosii localizate anterior sunt folosite ca 
+		si "masca" pentru a segmenta floarea sau fructul in 
+		imaginea grey-value folosind metoda active contour (1)	
+		-in final este calculata inconjuratoarea minima rectangulara 
+		pentru mastile florii sau a fructului ca fiind ROI
+	
+	-pentru categoria leafScan, fiecare imagine este, in general, 
+	o frunza cu un fundal luminos.
+		-exista variatii privind culoarea fundalului, ceea ce duce la nevoia 
+		de a normaliza fundalul la unui alb => se poate imbunatati 
+		acuratetea clasificarii
+		
+		-fiecare imagine este convertita intr-o imagine gray-value iar apoi 
+		este aplicata metoda Otsu (2) pentru a calcula o limita
+		
+		-pixelii din imaginea gray-value mai mici decat limita anterioara 
+		sunt setati ca fiind fundal => vor primi culoarea alb
+	
+	-pentru categoria leaf, o frunza este de obicei localizata in
+	centrul imaginii iar intre frunza si marginea pozei exista o margine
+		-ca urmare se extrage obiectul aflat in centrul pozei
+		
+		-in pasul de pre-procesare, imaginea este convertita in gray-value
+		si se aplica un filtru Gaussian cu sigma = 3 (2), dupa care se
+		extrage un ROI dreptunghic in imagine ca fiind un ROI initial ce
+		contine frunza. 
+		
+		-ROI este definit de coordonatele de stanga-sus si dreapta-jos din
+		imagine. Fie (r, l) numarul de randuri si coloane din imagine.
+		Coordinata stanga-sus va fi (r/6, l/6) iar dreapta jos (5r/6, 5l/6);
+		pe imaginea gray-scale este aplicat active contour folosind ROI
+		anterior ca masca initiala. Dreptunghiul inconjurator a frunzei 
+		segmentate va fi ROI  final.
+	
+	-pentru categoria stem (tulpina), tulpina este de obicei localizata 
+	in centrul imaginii. Pentru a segmenta tulpina, imaginea este
+	convertita in gray-scale si este creeata o masca prin eliminarea a 
+	25% din stanga si dreapta imaginii. Este aplicat contur activ pe
+	imaginea gri folosind masca. Dreptunghiul inconjurator este ROI
+	pentru tulpina.
+		-aceasta metoda poate scoate eficient majoritatea fundalului
+		pentru tulpini verticale, fara crengi. 
+						
