@@ -1,0 +1,41 @@
+Sabanci-Okan System
+
+	Sub-sistemul pentru categoriile de frunze izolate(LeafScans) are in plus fata de cel din anul precedent o clasificare a fotografiilor de plante folosind decriptori locali sau tehnici avansate de invatare.Sistemul a obtinut un scor global de 0.127 si un scor pentru frunze izolate de 0.449.
+
+1.Prezentare generala
+	Sistemul contine de doua ori mai multe imagini in baza de date decat anul trecut si ,deasemenea,contine in mare parte LeafScans(imagini izolate ale frunzelor).
+	Au impartit sarcinile :pentru flori,fructe si planta intreaga au folosit descriptori dense-SIFT,in timp ce pentru ramuri si frunze au folosit retele neuronale(CNN).Categoria TRUNCHI a fot recunoscuta folosind extrageri de texturi si culori,similar cu LeafScans.
+	La final au constatat ca s-au format multe clae pe parcursul proiectului asa ca au considerat util sa foloseasca meta-datele pentru a imparti categoria fructelor si a florilor tinand cont de perioada de inflorire si de fructificare si au calificat un clasificator separat pentru fiecare perioada.In asa fel au reusit sa reduca numarul de clase dar pentru celelalte categorii,acesti timpi nu au fost de folos.
+
+2.Preprocesare
+	Preprocesarea a fost prezentata doar pentru imaginile cu frunze.Au asezat axa principala a frunzei in raport cu axa verticala pentru analiza componentelor principale,adaugand acuratete din partea locatiei petiolului frunzei.Au fost aduse toate pozele la inaltimea de 600px ,respectand acelai aspect ratio.
+
+3. Caracteristici . 
+3.1  Caracteristici pentru LeafScans : identice cu cele utilizate de ImageCLEF 2013 . 
+Basic Shape Statistics (BSS): ofera infomatii legate de contur . Se bazeaza pe masuratori statistici din distanta de la centru de greutate .  Odata ce se afla centru de greutate se poate calcula euclidian pixelii de contur . Dupa sortare (secventiala) vom extrage urmatoarele masuratori de baza : 
+BSS={ max , min , median , variance }.
+Area Width Factor (AWF): se calculeaza pe tonuri de gri si constituie o usoara variatie a factorului de latime a frunzei .  Imagiea este impartita in n benzi , perpendiculare pe axa principala . Se calculeaza volumul ( suma valorilor pixelior ) pentru fiecare banda normalizate la volumul global . 
+AW F = {V oli/V ol}1≤i≤n
+Regional Moments of Inertia (RMI): similar AWR . In loc de a folosi suma valorilor pixelilor , fiecare banda va fi descrisa prin intermediul distantei medii euclidiene dintre centroid si pixelii de contur . 
+Angle Code Histogram (ACH): folosit pentru clasificarea frunzelor . Avem  masca de segmentare binara ( primul subesantion de pixeli de contur)  urmata de calculul unghiurilor formate de 3 puncte succesive . Carcateristica finala este histograma normalizata a unghiurilor calculate deja . 
+Edge Background/Foreground Ratio Histogram: calcularea raportulu de fundal pentru prim plan intr-o subferesatra centrata pe fiecare pixel . Histograma normalizata => vectorul  final de caracteristici . 
+Orientation Histogram (OH) : se calculeaza e date in tonuri de gri . Vectorul de caracteristici este este hitograma normalizata de n “lazi” de orientari dominate.
+Circular Covariance Histogram (CCH) and Rotation Invariant Point Triplets (RIT) : bazat pe covelenta operatorului morfologic . Acesta futioneaza e imagini in tonuri de gri si extrage periodic mostre prin intermediul deschiderii si inchiderii morfologice utilizand elemente cu structuri circulare . 
+Color Auto-correlogram (AC) : folosit pentru descierea culorii . LSH(spatiul de culoare ) a fost calculat dupa o sub-cuantificare neuniforma de 63 de culori (7- pt nuanta , 3-saturatie , 3-lumina ) . Se face un tabel in care intrarea (i,j) = probabil. de a intalni 2 pixeli de culoare i la o distanta de l pixeli . 
+Saturation-weighted Hue Histogram (SWHH) :  valoarea totala a fiecarei “lazi “Wθ, θ ∈ [0, 360] :   
+Wθ=  sum(SxδθHx) unde : Hx si Sx = nuanta si pozitiea ( valori ) de la pozitia x si  δθ = Funcția delta Kronecker .  Folosim o singura SVM (Support Vector Machine)  pentru a clasifica imaginile Leaf Scan bazte pe aceleasi carateristici . 
+
+3.2.Caracteristici ale fotografiilor cu plante
+	S-au folosti descriptori locali si thnici avansate pentru recunoasterea fotografiilor,in timp ce descrierea formei nu este folositoare iar informatiile despre culori si textura sunt limitate.Doar in studiul trunchiului s-au folosit aceste informatii.
+	Descriptori locali-Dense SIFT-acestia sunt aplicati florilor,fructelor si intregii plante.Datorita numarului mare de clase,prima data s-a impartit fiecare categorie in sub-categorii folosind datele furnizate de meta-date.Apoi au calificat un clasificator separat pentru fiecare categorie.In aceasta abordare,16 patch-uri (o componenta software facuta pentru a updata programe) au fost colectate din imagini si decriptorii SIFT au fost calculati pentru fiecare patch.Acesti descriptori au fost grupati folosind gruparile K pentru a produce cuvinte din dictionar.Au selectat 1200 de cuvinte asa ca au obtinut rezultate bune la validare.Odata ce cuvintele au fost selectate,fiecare imagine a fost descrisa ca o histograma folosind Modelul Bag of Words.In final,Suportul Vector-Masina(SVM) a fost calificat pentru a diferentia intre clase din fiecare sub-categorie,folosind aceste histograme ca si caracteristici.
+	Pentru implementare au folosit setul de instrumente  Weka in timp ce pentru optimizare au folosit  Stochastic Dual Coordinate Ascent .Ca si parametri ai optimizarii au fost folositi cautarea grila(grid search) cu costul C=10.
+	CNN-au folosit CNN penntru studiul frunzelor si a ramurilor pentru ca acestea au fost vazute ca cele mai provocatoare subcategorii.Retelele pe care le-au folosit contin 8 straturi unde productia ultimului strat softmax conectat produce o distributie peste clase.Primul si al 4-lea strat contin 5x5 nuclee;al doilea si 5-lea sunt straturi locale de normalizare;al 3-lea  si al 6-lea folosesc pentru unirea celorlalte iar al 7-lea este un strat local conectat.Pentru a procesa fiecare imagine,cea mai mare regiune patrata este taiata si scalata la 32x32x3.Primul strat proceseaza imaginea cu 32 de nuclee de dimensiune 5x5x3,al doilea ia ca input ceea ce returneaza primul strat si il filtreaza cu 64 de nuclee de dimensiune 5x5x32,al treilea,un strat cu dimensiuni necunoscute,are 64 de nuclee de dinensiune 3x3x64 iar stratul final conecteaza un strat soft-max .Pentru a reduce suprascrierea ,au folosit doua tehnici:Marirea de date unde s-au aplicat pastrarea transformarilor imaginii ca reflectii,rotatii si tranzlatii  in timp ce Renuntarea este folosita in al treilea strat,fix inainte de stratul soft-max.
+Caracteristici globale - - Stem Category : S-a uitilizat o combinatie de textura si descriptori de culoare  obtinuti din intraga imagine . S-a uitilizat deasemenea si un descriptor pentru zonele izolate (OH, CCH, RIT), si Morphological Covariance (MC)  care utilizeaza covariatia operatorilor bazat pe o eroziuni succesive ale mijloacelor  cuplurilor de puncte la diferite distanțe și orientări . 
+
+4.Rezultate
+	Pentru validarea metodelor au impartit setul de antrenament in doua(setul de antrenament si setul de valiadare),separat pentru fiecare subcategorie.Au pastrat toate imaginile ale fiecarei plante in setul de antrenament sau in setul de validare pentru a reduce suprascrierea.
+	Rezultatele nu au fost foarte bune exceptand categoria LeafScans unde sarcinile erau usoare si s-au obtinut rezultate foarte bune.In fact,rezultatele au fost mai mici decat anii trecuti dar complexitatea a fost mai mare.
+
+
+
+	
