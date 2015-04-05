@@ -1,0 +1,57 @@
+        Pl@ntNet’s participation at LifeCLEF 2014
+Plant Identification Task
+
+        
+ Introducere
+Tinta acestui program a fost sa produca o lista cu specii relevante de plante pentru fiecare
+observatie intr-un test a carui baza de date contine 8163 de plante bazat pe 13146 de poze, in care
+fiecare observatie contine mai multe poze a fiecarui organ al unei plante: floare, fruct, frunza, stem,
+tulpina, etc. In total sunt 47815 poze cu toate organele.
+ Descrierea sistemului
+Fiecare observatie poate contine mai multe poze cu diferite organe sau din diferite unghiuri.
+Sistemul trateaza independent fiecare organ iar dupa este folosit un framework care combina continutul
+vizual pentru analiza.
+- Nivelul local: se extrag diverse trasaturi locale din jurul punctului de interes din imagine.
+- Nivelul imagine: se combina lista de imagini produsa pentru toate tipurile de trasaturi.
+- Nivelul Multi-imagini: rezultatele din multiple teste pe aceeasi planta cu acelasi organ sunt
+combinate.
+- Nivelul observatie: sunt combinate rezultatele si transformate intr-o specie de planta.
+Pentru nivelul local se detecteaza punctul de interes si se foloseste o distributie Gaussian pe o
+matrice de 7x7 pentru a avea mai multe puncte in centrul pozei, deoarele in majoritatea cazurilor
+punctul este in mijlocul imaginii.
+Cam 100 de puncte per imagine rezulta in urma acestui proces si sunt extrase 150-200 trasaturi
+locale iar apoi sunt analizate.
+Pentru fiecare tip de organ si pentru fiecare trasatura locala sunt compresate si indexate folosind
+metoda RMMH si folosind un hash code pe 256biti care a dus la un total de 43 de tabele hash unice( 6
+organe/ x 7 tipuri de trasaturi + 1 tabela separata pentru scanari) Dar in final doar jumatate din ele sunt
+alese pentru a rula.
+Se foloseste sistemul VOB(Vote on Best) si Ranking Dominate(RD);
+Nivelul imagine: la acest pas acum avem pentru fiecare imagine deja mai multe alte imagini cu
+o lista de raspuns pentru fiecare tip de trasatura, si urmatorul pas este sa combinam aceste raspunsuri
+pentru a forma un singur raspuns bun. Folosim o fuziune cu diferite metode experimentate in cele 4
+rulari de pana acum.
+Cin si WP la prima rulare. CIN fiind un KNN adaptiv pentru a converti o lista de imagini
+raspuns in o specie probabila
+Wp(Weighted Probability combination) la acest pas deja acem diverse specii proabile pentru
+fiecare tip de trasatura.
+BordaMNZ si IrpMNZ care au aratat performanta buna la rularile experimetale cu algoritmi de
+baza fara a folosi algoritmi complicati si transformari empirice sau liste similare pentru distributiile
+probabile.
+Nivelul intermediar(Multi imagine): la acest pas avem deja cunostinte despre imagine si diferite
+trasaturi pentru planta din diverse alte observatii.
+Nivelul observatie si de decizie: Acesta este pasul final, avem o distributie de probabilitati, iar
+daca am folosit WP avem o lista finala data raspuns.
+ Concluzie
+Pl@ntNet este o aplicatie pentru image sharing si pentru a identifica orice planta. A fost facuta
+de oameni de stiinta din 4 mari organizatii franceze( Cirad, INRA, Inria si IRD) si reteaua Tela
+Botanica avand suport financiar de la fundatia Agropolis.
+Printre alte facilitati aceasta aplicatie ajuta la identificarea unei plante dintr-o fotografie printrun
+soft de visual recognition. Speciile de plante cunoscute si ilustrate in cartile botanice si in bazele de
+date pot fi foarte usor recunoscute.
+Aplicatia are peste 4000 de specii in baza de date, iar baza de date poate fi accesata de catre
+oricine din aplicatie. Numarul de psecii si de imagini folosite pentru aceasta aplicatie evolueaza si
+creste in continuare cu contributia userilor care trimit imagini dezvoltatorilor.
+Nu permite identificarea de plante ornamentale. Functioneaza cel mai bine pe poze trimise care
+sunt focalizate pe un anumit organ. Pozele cu frunzele pe un background uniform aduc cele mai bune
+rezultate. Daca identifici corect o specie poti participa la proiect daca trimiti observatia ta iar ele vor fi
+validate ulterior.
