@@ -1,0 +1,17 @@
+Advanced Feature Coding
+
+Pentru a identifica elementele cheie dintr-o imagine, s-a utilizat framework-ul FisherKernel - o generalizare a modelului BOW(Bag of Words).
+
+Bag of words este un model de reprezentare a imaginilor, in care componentele imaginii (cuvintele) trebuie definite si identificate (fiind, deci, necesara o modalitate de detectie a acestora) si se bazeaza pe analiza statistica a unei parti a imaginii. Cuvantul definit cu care acea parte se potriveste cel mai bine este cel ales.
+
+De exemplu se presupunem ca intr-o imagine avem o frunza rosie, iar in dictionarul nostru avem cuvintele frunza si floare.
+O analiza statistica arata ca 35% din florile din baza noastra de date sunt rosii si sub 1% au o forma asemanatoare. In acelasi timp 72% din frunzele din baza noastra de date au o forma asemanatoare cu cea a frunzei noastre. Deci, pe baza acestei analize, vom trage concluzia ca, obiectul analizat seamana cel mai mult cu o frunza.
+
+
+Deep Convolutional Neural Network
+
+Pentru o identificare mai precisa a plantelor s-a utilizat o retea neuronala pentru care datele de antrenament au fost cele date pe site-ul proiectului. Cea mai mare problema a acestei abordari este numarul mic de date de antrenament oferite de concurs si faptul ca cele mai bune surse de invatare pentru acest sistem sunt interzise de regulamentul competitiei. Totusi, pentru scenarii de identificare din viata reala acest sistem ar avea foarte mare succes daca ar fi antrenat pe un numar mai mare de imagini.
+
+Pentru ca antrenamentul sa fie mai rapid s-a utilizat o implementare care sa mearga pe un GPU (procesor grafic similar unei placi video), deoarece acestea se descurca mult mai bine la procesarea unor cantitati mari de date, avand memorie mult mai performanta si un paralelist extrem de bine optimizat.
+
+
