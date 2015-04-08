@@ -1,0 +1,30 @@
+Lire: Lucene Image Retrieval
+1.Prezentare
+2.Utilizare
+3.Descriere pas-cu-pas
+4.Concluzii
+
+1.Prezentare
+
+Lire este o librarie Java care permite cautarea de poze si imagini ale caror caracteristici precum culoare si textura se aseamana. Se creaza un index ce este atribut imaginii dupa care va cauta.
+Acesta aplicatie permite cautarea imaginilor dupa anumite tag-uri si ordonate in diferite moduri( introduse de utilizator). Se poate seta si corectitudinea cu care se cauta imagini asemanatoare si de asemenea si numarul de candidati.
+
+2.Utilizare
+Aplicatia va face o cerere de imagine utilizatorului.
+Dupa alegerea imaginii preferate, LIRE va extrage caracteristicile necesare procesarii. Urmeaza acordarea unui “feed-back”. In cadrul acestei etape, utilizatorul va fi chestionat cu privire la cat este de multumit de rezultatul returnat de aplicatie. 
+Dupa terminarea acestei etape, aplicatia va returna imagini similare celei initiale.
+
+3.Descriere pas-cu-pas
+
+Considerand primul pas incheiat cu success, vom trece la explicarea urmatoarelor etape.
+Urmeaza extragerea de caracteristici ale imaginii. Vor fi selectate deci informatii legate atat de culoare, textura, forma etc. 
+Informatiile legate de culoare vor fi caracteristici precum varianta, media, deviatia standard. 
+De asemenea cele legate de textura vor fi informatii precum energiea, entropia, contrastul, omogenitatea culorilor etc.
+Odata incheiata aceasta etapa de extragere a informatiilor necesare procesarii, se va trece la etapa urmatoare, adica la partea de feed-back.
+In cadrul acesteia, vor exista multiple operatii de descoperire de informatii( operatii cu date de transformat, depistare paternuri de navigare de parsat, si partern de indexat ). Toate acestea sunt luate in considerare iar mai apoi userul este chestionat daca este multumit sau nu de rezultat. El va trebui sa introduca un rating baza pe cat de satisfacut de rezultatul primit este. Deoarece LIRE implementeaza conceptual de Machine learning, se va lucra pe ratingurile acordate de catre utilizatori( relevant, ne-relevant, neutru). In aceasta maniera, programul va functiona din ce in ce mai bine.
+
+
+4. Concluzii
+
+Platforma Lire permite cautarea de poze si imagini in functie de anumite criterii selectate de utilizator. Aplicatia e open-source si poate fi utilizata de orice utilizator.
+
