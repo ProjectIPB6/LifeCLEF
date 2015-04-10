@@ -1,0 +1,6 @@
+### Module 1 - ImageOps ###
+
+This module deals with the following:
+
+-parsing the training data and separating it systematically (<observation_id> / <plant_organ> / <photo>)
+-processing each image and extracting the Region Of Interest (ROI), removing the background and reorienting
