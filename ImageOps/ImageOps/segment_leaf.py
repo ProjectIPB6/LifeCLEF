@@ -3,87 +3,87 @@
     -the image is converted to gray-scale
     -a gaussian filter with a kernel of 5 and sigma = 3 is applied to the gray-scale image
     -an initial mask for the active contour method is calculated
-    -after active contour is applied to the gray-scale image, the rectangular boundary represents the ROI
-    for the initial image
+    -after active contour (package chanvese) is applied to the gray-scale image,
+    the rectangular boundary represents the ROI for the initial image
 """
 
 import cv2
+import numpy
+from chanvese import chanvese
+import os
+import shutil
+import time
 
 
-def segment_leaf(image_path):
+def segment_leaf(image_folder, dest_folder=None):
+    if dest_folder is None:
+        if not os.path.exists(os.path.join(image_folder, 'leaf')):
+            os.mkdir(os.path.join(image_folder, 'leaf'))
+        dest_folder = os.path.join(image_folder, 'leaf')
 
-    image = cv2.imread(image_path)
-    if image is None:
-        print "[error] Could not load image %s" % image_path
-        return -1
+    files = os.listdir(image_folder)
 
-    initial_roi_coords = (image.shape[0]/6, image.shape[1]/6, (image.shape[0]*5)/6, (image.shape[1]*5)/6)
+    for file_name in files:
+        image_path = os.path.join(image_folder, file_name)
+        if not os.path.isfile(image_path) or "_leaf.jpg" in file_name or ".xml" in file_name:
+            continue
+        if files.count(file_name[:-3] + "xml") + files.count(file_name[:-3] + "jpg") != 2:
+            print "[error] Missing (image, xml) pair"
+            continue
+        else:
+            xml_file = open(image_path[:-3] + "xml")
+            if "<content>leaf</content>" not in xml_file.read().lower():
+                continue
+            else:
+                print "[leaf] %s" % image_path
 
-    print "Rows: %s Columns: %s Depth: %s" % image.shape
-    print "Initial ROI top-left / bottom-right coordinates: (%s, %s), (%s, %s)" % initial_roi_coords
+        time_s = time.time()
 
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    gray_image = cv2.GaussianBlur(gray_image, (5, 5), 3)
+        shutil.copy(image_path, dest_folder)
+        shutil.copy(image_path[:-4] + ".xml", dest_folder)
 
-    cv2.imshow('gray_gauss', gray_image)
+        image_path = os.path.join(dest_folder, file_name)
 
-    roi_mask = [(initial_roi_coords[1], initial_roi_coords[0]),
+        image = cv2.imread(image_path)
 
-                (initial_roi_coords[1], initial_roi_coords[0] + (initial_roi_coords[2] - initial_roi_coords[0]) / 4),
-                (initial_roi_coords[1], initial_roi_coords[0] + (initial_roi_coords[2] - initial_roi_coords[0]) / 2),
-                (initial_roi_coords[1], initial_roi_coords[2] - (initial_roi_coords[2] - initial_roi_coords[0]) / 4),
+        if image is None:
+            print "[error] Could not load image %s" % image_path
+            continue
 
-                (initial_roi_coords[1], initial_roi_coords[2]),
+        initial_roi_coords = (image.shape[0]/6, image.shape[1]/6, (image.shape[0]*5)/6, (image.shape[1]*5)/6)
 
-                (initial_roi_coords[1] + (initial_roi_coords[3] - initial_roi_coords[1]) / 4, initial_roi_coords[2]),
-                (initial_roi_coords[1] + (initial_roi_coords[3] - initial_roi_coords[1]) / 2, initial_roi_coords[2]),
-                (initial_roi_coords[3] - (initial_roi_coords[3] - initial_roi_coords[1]) / 4, initial_roi_coords[2]),
+        print "Rows: %s Columns: %s Depth: %s" % image.shape
+        print "Initial ROI top-left / bottom-right coordinates: (%s, %s), (%s, %s)" % initial_roi_coords
 
-                (initial_roi_coords[3], initial_roi_coords[2]),
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray_image = cv2.GaussianBlur(gray_image, (5, 5), 3)
 
-                (initial_roi_coords[3], initial_roi_coords[0] + (initial_roi_coords[2] - initial_roi_coords[0]) / 4),
-                (initial_roi_coords[3], initial_roi_coords[0] + (initial_roi_coords[2] - initial_roi_coords[0]) / 2),
-                (initial_roi_coords[3], initial_roi_coords[2] - (initial_roi_coords[2] - initial_roi_coords[0]) / 4),
+        cv2.imwrite('temp_.jpg', gray_image)
+        a, _, _ = chanvese.chanvese_2('temp_.jpg', initial_roi_coords[1], initial_roi_coords[3],
+                                      initial_roi_coords[0], initial_roi_coords[2], 300)
+        os.remove('temp_.jpg')
 
-                (initial_roi_coords[1] + (initial_roi_coords[3] - initial_roi_coords[1]) / 4, initial_roi_coords[0]),
-                (initial_roi_coords[1] + (initial_roi_coords[3] - initial_roi_coords[1]) / 2, initial_roi_coords[0]),
-                (initial_roi_coords[3] - (initial_roi_coords[3] - initial_roi_coords[1]) / 4, initial_roi_coords[0]),
+        active_contour = cv2.bitwise_and(image, image, mask=numpy.array(a, dtype=numpy.uint8))
 
-                (initial_roi_coords[3], initial_roi_coords[0]),
-                ]
+        cv2.imwrite(image_path[:-4] + "_leaf_ac.jpg", active_contour)
 
-    init_roi = image.copy()
+        active_contour = cv2.cvtColor(active_contour, cv2.COLOR_BGR2GRAY)
 
-    for point in roi_mask:
-        cv2.circle(init_roi, point, 5, (0, 0, 255), 3)
+        contours, tree = cv2.findContours(active_contour, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-    cv2.imshow('init_roi', init_roi)
+        areas = [cv2.contourArea(c) for c in contours]
+        max_index = numpy.argmax(areas)
+        cnt = contours[max_index]
 
-    image_ipl = cv2.cv.CreateImageHeader((gray_image.shape[1], gray_image.shape[0]), cv2.cv.IPL_DEPTH_8U, 1)
-    cv2.cv.SetData(image_ipl, gray_image, gray_image.dtype.itemsize * 1 * gray_image.shape[1])
+        x, y, w, h = cv2.boundingRect(cnt)
+        image = image[y:y+h, x:x+w]
 
-    active_contour = cv2.cv.SnakeImage(image_ipl, roi_mask, -0.5, 0.4, 0.6, (9, 9),  # -0.4 0.5 0.5 7 7
-                                       (cv2.cv.CV_TERMCRIT_ITER, 10000, 0.1))
+        cv2.imwrite(image_path[:-4] + "_leaf.jpg", image)
 
-    final_roi = image.copy()
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-    for point in active_contour:
-        cv2.circle(final_roi, point, 5, (0, 0, 255), 3)
+        print "%ssec" % (time.time() - time_s)
 
-    cv2.imshow('final_roi', final_roi)
-
-    min_x = min(active_contour, key=lambda t: t[0])[0]
-    min_y = min(active_contour, key=lambda t: t[1])[1]
-
-    max_x = max(active_contour, key=lambda t: t[0])[0]
-    max_y = max(active_contour, key=lambda t: t[1])[1]
-
-    image = image[min_y:max_y, min_x:max_x]
-
-    cv2.imshow('final_image', image)
-
-    print image_path.split('.')
-    cv2.imwrite(image_path.split('.')[0] + "_leaf." + image_path.split('.')[1], image)
-
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+if __name__ == "__main__":
+    segment_leaf(r"C:\_Facultate\IP\PlantCLEF2015TrainTestData\test")
