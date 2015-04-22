@@ -397,7 +397,7 @@ def get_roi_borders(picture_name):
     return original_image
 
 
-def draw_contour(picture_name):
+def crop_roi(picture_name):
     image = cv2.imread(picture_name)
     grey_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     grey_image = cv2.GaussianBlur(grey_image,(5,5),0)
@@ -467,9 +467,23 @@ def draw_contour(picture_name):
 
 
 if __name__ == '__main__':
-    folder_name = sys.argv[1]
 
-    poze = os.listdir(folder_name)
+    if len(sys.argv) > 1:
+        folder_name = sys.argv[1]
+        files = os.listdir(folder_name)
 
-    for poza in poze:
-        cv2.imwrite('output_2\\' + poza, draw_contour(folder_name + '\\' + poza))
+        for file_name in files:
+            if file_name is not '.' and file_name is not '..':
+                if file_name.split('.')[-1] == 'xml':
+                    xml_file = open(os.path.join(folder_name, file_name), 'r')
+
+                    for line in xml_file:
+                        if line.find('<Content>') != -1:
+
+                            if line.find('Flower') != -1 or line.find('Fruit') != -1:
+                                photo_name = file_name.split('.')[0] + '.jpg'
+                                cv2.imwrite('output_final\\' + photo_name, crop_roi(folder_name + '\\' + photo_name))
+
+                    xml_file.close()
+    else:
+        print('Scriptul are nevoie de numele folder-ului ca parametru.')
