@@ -1,0 +1,6 @@
+### ExtractLeaf ###
+
+This module deals with the following:
+
+-processing an input leaf image and extracting its ROI
+-used code available from the following location: http://dx.doi.org/10.5201/ipol.2012.g-cv for active contour

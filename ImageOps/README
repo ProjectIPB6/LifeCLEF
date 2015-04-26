@@ -1,6 +1,0 @@
-### ImageOps ###
-
-This module deals with the following:
-
--processing each image and extracting the Region Of Interest (ROI), removing the background and reorienting
--parsing the training data and separating it systematically (<observation_id> / <plant_organ> / <photo>)
