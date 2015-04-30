@@ -1,0 +1,8 @@
+### RoiExtraction ###
+
+This module processes the training set and extracts the ROI for each image, as needed.
+Every type of organ except Whole and Branch is processed since the two contain enough
+information about the plant as is.
+
+The module is written in Python and uses OpenCV for image processing and other 3rd
+party modules not included in OpenCV, such as Chan-Vese active contour detection.

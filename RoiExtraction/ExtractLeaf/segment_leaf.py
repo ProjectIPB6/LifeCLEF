@@ -36,10 +36,15 @@ def process_leaf(image_path, output_folder="."):
 
     cv2.imwrite(temp_img_path, gray_image)
     init_mask_path = make_mask(temp_img_path)
-
-    process = subprocess.Popen([os.path.join(os.path.dirname(__file__), "chanvese", "chanvese.exe"),
-                                "phi0:%s" % init_mask_path, "mu:0.0", "iterperframe:1000", "maxiter:1000",
-                                temp_img_path, "animation.gif", temp_img_path + "_final.bmp"])
+   
+    if os.name != 'nt':
+        process = subprocess.Popen([os.path.join(os.path.dirname(__file__), "chanvese", "chanvese"),
+                                                                "phi0:%s" % init_mask_path, "mu:0.0", "iterperframe:1000", "maxiter:1000",
+                                                                temp_img_path, temp_img_path + "_animation.gif", temp_img_path + "_final.bmp"])
+    else:
+        process = subprocess.Popen([os.path.join(os.path.dirname(__file__), "chanvese", "chanvese.exe"),
+                                                                "phi0:%s" % init_mask_path, "mu:0.0", "iterperframe:1000", "maxiter:1000",
+                                                                temp_img_path, temp_img_path + "_animation.gif", temp_img_path + "_final.bmp"])
     process.wait()
 
     mask = cv2.imread(temp_img_path + "_final.bmp", 0)
@@ -58,9 +63,10 @@ def process_leaf(image_path, output_folder="."):
 
     image = image[y:y+h, x:x+w]
 
-    cv2.imwrite(os.path.join(output_folder, file_name[:-4] + "_leaf.jpg"), image)
+    cv2.imwrite(os.path.join(output_folder, file_name), image)
 
     os.remove(temp_img_path)
+    os.remove(temp_img_path + "_animation.gif")
     os.remove(init_mask_path)
     os.remove(temp_img_path + "_final.bmp")
 

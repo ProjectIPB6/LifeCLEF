@@ -6,14 +6,14 @@ import shutil
 from multiprocessing import Pool
 from ExtractLeaf.segment_leaf import process_leaf
 
-def crop_image(image, height, width):
 
+def crop_image(image, height, width):
     top = height - 1
     bottom = 0
     left = width - 1
     right = 0
 
-    print top, bottom, left, right
+    print "[crop] Top: %s Bottom: %s Left: %s Right: %s" % (top, bottom, left, right)
 
     for i in range(height):
         for j in range(width):
@@ -28,7 +28,7 @@ def crop_image(image, height, width):
                 elif j > right:
                     right = j
 
-    print top, bottom, left, right
+    print "[crop] Top: %s Bottom: %s Left: %s Right: %s" % (top, bottom, left, right)
 
     image = image[top:bottom, left:right]
 
@@ -50,7 +50,7 @@ def process_flower_fruit(flower_path_name, output_folder):
 
     if len(contours) <= 50:
         image = cv2.bitwise_and(image, image, mask=threshold)
-        print flower_picture_name + ' a fost procesata de flower/fruit simplu'
+        print "[flower_fruit] " + flower_picture_name + ' a fost procesata de flower/fruit simplu'
 
     else:
         rect = (10, 10, width - 21, height - 21)
@@ -60,7 +60,7 @@ def process_flower_fruit(flower_path_name, output_folder):
         cv2.grabCut(image, mask, rect, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_RECT)
         mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
         image = image * mask2[:, :, np.newaxis]
-        print flower_picture_name + ' a fost procesata de flower/fruit complex'
+        print "[flower_fruit] " + flower_picture_name + ' a fost procesata de flower/fruit complex'
 
     image = crop_image(image, height, width)
     cv2.imwrite(os.path.join(output_folder, flower_picture_name), image)
@@ -80,7 +80,7 @@ def process_scan_leaf(scan_leaf_path, output_folder):
 
     if len(contours) <= 50:
         image = cv2.bitwise_and(image, image, mask=threshold)
-        print leaf_picture_name + ' a fost procesata de leaf scan simplu'
+        print "[leafscan] " + leaf_picture_name + ' a fost procesata de leaf scan simplu'
 
     else:
         rect = (10, 10, width - 21, height - 21)
@@ -90,7 +90,7 @@ def process_scan_leaf(scan_leaf_path, output_folder):
         cv2.grabCut(image, mask, rect, bgd_model, fgd_model, 5, cv2.GC_INIT_WITH_RECT)
         mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
         image = image * mask2[:, :, np.newaxis]
-        print leaf_picture_name + ' a fost procesata de leaf scan complex'
+        print "[leafscan] " + leaf_picture_name + ' a fost procesata de leaf scan complex'
 
     image = crop_image(image, height, width)
     cv2.imwrite(os.path.join(output_folder, leaf_picture_name), image)
@@ -130,50 +130,72 @@ if __name__ == '__main__':
         output_folder = os.path.join(output_folder, folder)
 
         if not os.path.isdir(output_folder):
+            print "[main] Se creeaza " + output_folder
             os.mkdir(output_folder)
+            os.mkdir(os.path.join(output_folder, "flower"))
+            os.mkdir(os.path.join(output_folder, "fruit"))
+            os.mkdir(os.path.join(output_folder, "leafscan"))
+            os.mkdir(os.path.join(output_folder, "leaf"))
+            os.mkdir(os.path.join(output_folder, "stem"))
+            os.mkdir(os.path.join(output_folder, "entire"))
+            os.mkdir(os.path.join(output_folder, "branch"))
 
+        files_o = os.listdir(output_folder)
         files = os.listdir(folder_name)
 
         for file_name in files:
+            if file_name in files_o:
+                print "[main] Skipping", file_name
+                continue
 
             extension = file_name.split('.')[-1]
 
             file_name = os.path.join(folder_name, file_name)
-
+            
             if extension == 'xml':
-
                 picture_name = file_name.split('.')[-2]
                 picture_name = os.path.split(picture_name)[-1]
                 picture_name += '.jpg'
                 picture_path = os.path.join(folder_name, picture_name)
 
                 if os.path.isfile(picture_path):
-
                     xml_file = open(os.path.join(folder_name, file_name), 'r')
 
                     for line in xml_file:
                         if line.find('<Content>') != -1:
-                            if line.find('<Content>Flower</Content>') != -1 or line.find('<Content>Fruit</Content>') != -1:
+                            if line.find('<Content>Flower</Content>') != -1:
+                                print 'Flower: ', picture_path
+                                pool.apply_async(process_flower_fruit, [picture_path, os.path.join(output_folder, "flower")])
+				shutil.copyfile(file_name, os.path.join(output_folder, "flower", os.path.split(file_name)[-1]))
+                            
+                            if line.find('<Content>Fruit</Content>') != -1:
                                 print 'Flower/Fruit: ', picture_path
-                                pool.apply_async(process_flower_fruit, [picture_path, output_folder])
-
+                                pool.apply_async(process_flower_fruit, [picture_path, os.path.join(output_folder, "fruit")])
+				shutil.copyfile(file_name, os.path.join(output_folder, "fruit", os.path.split(file_name)[-1]))
+				
                             elif line.find('<Content>LeafScan</Content>') != -1:
                                 print 'LeafScan: ', picture_path
-                                pool.apply_async(process_scan_leaf, [picture_path, output_folder])
+                                pool.apply_async(process_scan_leaf, [picture_path, os.path.join(output_folder, "leafscan")])
+				shutil.copyfile(file_name, os.path.join(output_folder, "leafscan", os.path.split(file_name)[-1]))
 
                             elif line.find('<Content>Leaf</Content>') != -1:
                                 print 'Leaf: ', picture_path
-                                pool.apply_async(process_leaf, [picture_path, output_folder])
+                                pool.apply_async(process_leaf, [picture_path, os.path.join(output_folder, "leaf")])
+				shutil.copyfile(file_name, os.path.join(output_folder, "leaf", os.path.split(file_name)[-1]))
 
                             elif line.find('<Content>Stem</Content>') != -1:
                                 print 'Stem: ', picture_path
-                                pool.apply_async(process_stem, [picture_path, output_folder])
+                                pool.apply_async(process_stem, [picture_path, os.path.join(output_folder, "stem")])
+				shutil.copyfile(file_name, os.path.join(output_folder, "stem", os.path.split(file_name)[-1]))
 
-                            else:
-                                print 'Entire/Branch: ', picture_path
-                                shutil.copyfile(picture_path, os.path.join(output_folder, picture_name))
-
-                    shutil.copyfile(file_name, os.path.join(output_folder, os.path.split(file_name)[-1]))
-
+                            elif line.find('<Content>Entire</Content>') != -1:
+                                print 'Entire: ', picture_path
+                                shutil.copyfile(picture_path, os.path.join(output_folder, "entire", picture_name))
+				shutil.copyfile(file_name, os.path.join(output_folder, "entire", os.path.split(file_name)[-1]))
+				
+                            elif line.find('<Content>Branch</Content>') != -1:
+                                print 'Branch: ', picture_path
+                                shutil.copyfile(picture_path, os.path.join(output_folder, "branch", picture_name))
+				shutil.copyfile(file_name, os.path.join(output_folder, "branch", os.path.split(file_name)[-1]))
         pool.close()
         pool.join()

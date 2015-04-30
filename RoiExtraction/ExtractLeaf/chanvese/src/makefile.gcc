@@ -7,9 +7,9 @@
 # the libjpeg, libpng, and libtiff libraries.  For each library, set
 # the flags needed for linking.  To disable use of a library, comment
 # its statement.  You can disable all three (BMP is always supported).
-LDLIBJPEG=-ljpeg
-LDLIBPNG=-lpng -lz
-LDLIBTIFF=-ltiff
+#LDLIBJPEG=-ljpeg
+#LDLIBPNG=-lpng -lz
+#LDLIBTIFF=-ltiff
 
 # Uncomment this line to perform computations in single precision
 # instead of double precision.
