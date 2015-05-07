@@ -54,8 +54,12 @@ if (empty($search) || glob ($search.'*')) {
     $json = curl($url);
     $results = getResults($json);
 		
-
-	$c=0;
+	$contor = fopen("contor.txt","r+");
+	$obs_id = fopen("id.txt", "r+");
+	$c=fgets($contor);
+	fclose($contor);
+	$o_id = fgets($obs_id);
+	fclose($obs_id);
 	
 	foreach($results as $a){
 		
@@ -64,7 +68,6 @@ if (empty($search) || glob ($search.'*')) {
 	
 	if(!preg_match($pattern, $a, $matches))
 	{
-	    
 	
 	$c++;
 	
@@ -107,17 +110,17 @@ $plant_part = "LeafScan";
 
 $extension = pathinfo($a, PATHINFO_EXTENSION);
 
-$img = $search.$c.'.'.$extension;
+$img = $c.'.'.$extension;
 
 //you must check folder permissions in order for files to be saved
 
 file_put_contents($img, file_get_contents($a));
 
-$fp=fopen($search.$c.'.xml',"w");
+$fp=fopen($c.'.xml',"w");
 
 fwrite($fp,'<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL);
 fwrite($fp,'<Image>'.PHP_EOL);
-fwrite($fp,'  <ObservationId>'.$search.'</ObservationId>'.PHP_EOL);
+fwrite($fp,'  <ObservationId>'.$o_id.'</ObservationId>'.PHP_EOL);
 fwrite($fp,'  <FileName>'.$img.'</FileName>'.PHP_EOL);
 fwrite($fp,'  <MediaId>'.$search.$c.'</MediaId>'.PHP_EOL);
 fwrite($fp,'  <Vote>'.mt_rand(5, 10).'</Vote>'.PHP_EOL);
@@ -136,11 +139,17 @@ fwrite($fp,'  <IndividualPlantId2015 />'.PHP_EOL);
 fwrite($fp,'  <ImageID2015 />'.PHP_EOL);
 fwrite($fp,'  <LearnTag>Train</LearnTag>'.PHP_EOL);
 fwrite($fp,'</Image>'.PHP_EOL);
-
 fclose($fp);
 
 	}
     }
 }
 
+$handle = fopen ("contor.txt", "w+");
+$handle2 = fopen ("id.txt", "w+");
+
+fwrite($handle2,$o_id+1);
+fclose($handle2);
+fwrite($handle,$c);
+fclose($handle);
 ?>
