@@ -119,7 +119,7 @@ if __name__ == '__main__':
 
     else:
 
-        pool = Pool(processes=50)
+        pool = Pool(processes=4)
 
         folder_name = sys.argv[1]
 
@@ -144,9 +144,6 @@ if __name__ == '__main__':
         files = os.listdir(folder_name)
 
         for file_name in files:
-            if file_name in files_o:
-                print "[main] Skipping", file_name
-                continue
 
             extension = file_name.split('.')[-1]
 
@@ -164,37 +161,37 @@ if __name__ == '__main__':
                     for line in xml_file:
                         if line.find('<Content>') != -1:
                             if line.find('<Content>Flower</Content>') != -1:
-                                print 'Flower: ', picture_path
+                                #print 'Flower: ', picture_path
                                 pool.apply_async(process_flower_fruit, [picture_path, os.path.join(output_folder, "flower")])
 				shutil.copyfile(file_name, os.path.join(output_folder, "flower", os.path.split(file_name)[-1]))
                             
                             if line.find('<Content>Fruit</Content>') != -1:
-                                print 'Flower/Fruit: ', picture_path
+                                #print 'Flower/Fruit: ', picture_path
                                 pool.apply_async(process_flower_fruit, [picture_path, os.path.join(output_folder, "fruit")])
 				shutil.copyfile(file_name, os.path.join(output_folder, "fruit", os.path.split(file_name)[-1]))
 				
                             elif line.find('<Content>LeafScan</Content>') != -1:
-                                print 'LeafScan: ', picture_path
+                                #print 'LeafScan: ', picture_path
                                 pool.apply_async(process_scan_leaf, [picture_path, os.path.join(output_folder, "leafscan")])
 				shutil.copyfile(file_name, os.path.join(output_folder, "leafscan", os.path.split(file_name)[-1]))
 
                             elif line.find('<Content>Leaf</Content>') != -1:
-                                print 'Leaf: ', picture_path
+                                #print 'Leaf: ', picture_path
                                 pool.apply_async(process_leaf, [picture_path, os.path.join(output_folder, "leaf")])
 				shutil.copyfile(file_name, os.path.join(output_folder, "leaf", os.path.split(file_name)[-1]))
 
                             elif line.find('<Content>Stem</Content>') != -1:
-                                print 'Stem: ', picture_path
+                                #print 'Stem: ', picture_path
                                 pool.apply_async(process_stem, [picture_path, os.path.join(output_folder, "stem")])
 				shutil.copyfile(file_name, os.path.join(output_folder, "stem", os.path.split(file_name)[-1]))
 
                             elif line.find('<Content>Entire</Content>') != -1:
-                                print 'Entire: ', picture_path
+                                #print 'Entire: ', picture_path
                                 shutil.copyfile(picture_path, os.path.join(output_folder, "entire", picture_name))
 				shutil.copyfile(file_name, os.path.join(output_folder, "entire", os.path.split(file_name)[-1]))
 				
                             elif line.find('<Content>Branch</Content>') != -1:
-                                print 'Branch: ', picture_path
+                                #print 'Branch: ', picture_path
                                 shutil.copyfile(picture_path, os.path.join(output_folder, "branch", picture_name))
 				shutil.copyfile(file_name, os.path.join(output_folder, "branch", os.path.split(file_name)[-1]))
         pool.close()
