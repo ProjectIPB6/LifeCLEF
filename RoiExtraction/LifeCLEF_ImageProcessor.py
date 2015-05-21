@@ -111,6 +111,7 @@ def process_stem(stem_path, output_folder):
 
     cv2.imwrite(os.path.join(output_folder, stem_picture_name), image)
 
+    return stem_picture_name
 
 if __name__ == '__main__':
 
